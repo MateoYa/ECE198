@@ -44,6 +44,8 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 int student_flag;
+int skip;
+int accept;
 int deny;
 /* USER CODE END PV */
 
@@ -69,6 +71,9 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 	student_flag = 0;
+	accept = 0;
+	deny = 0;
+	skip = 0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -98,20 +103,44 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  HAL_Delay(100);
 	  while(student_flag == 0);
-
-	  HAL_Delay(50);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
-	  if(student_flag == 1 && HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0) == 1){
-		  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	  if(student_flag == 1){
+		  student_flag = 0;
+		  while(deny == 0){
+			  if(accept == 1){
+				  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+				  HAL_Delay(5);
+				  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
+			  }
+		  }
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+		  HAL_Delay(5);
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+		  if(student_flag == 0){
+			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+		  }
+		  deny = 0;
+		  accept = 0;
 	  }
-	  else if(student_flag == -1){
-		  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	  if(student_flag == 2){
+		  student_flag = 0;
+		  while(deny == 0){
+			  if(accept == 1){
+				  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
+				  HAL_Delay(5);
+				  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
+			  }
+		  }
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
+		  HAL_Delay(5);
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+		  if(student_flag == 0){
+			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+		  }
+		  deny = 0;
+		  accept = 0;
 	  }
-	  student_flag = 0;
 
     /* USER CODE END WHILE */
 
@@ -248,23 +277,21 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 HAL_GPIO_EXTI_Callback(uint16_t pinName){
-	student_flag = 1;
 	if(pinName == STUDENT_1_Pin){
 		student_flag = 1;
 		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
 	}
 	if(pinName == STUDENT_2_Pin){
-		student_flag = 1;
+		student_flag = 2;
 		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
 	}
 	if(pinName == DENY_Pin){
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+		deny = 1;
+		accept = 0;
 	}
 	if(pinName == ACCEPT_Pin){
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
+		accept = 1;
+		deny = 0;
 	}
 }
 /* USER CODE END 4 */
